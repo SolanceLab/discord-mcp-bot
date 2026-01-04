@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment variables (contains secrets!)
+.env
+
+# Memory ledger (contains private conversations)
+memory-ledger.json
+
+# Personal persona file (user creates their own)
+persona.md
+
+# Downloaded attachments cache
+.discord_attachments/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

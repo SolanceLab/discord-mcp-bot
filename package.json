@@ -1,0 +1,29 @@
+{
+  "name": "chadrien-discord-bot",
+  "version": "2.0.0",
+  "description": "Discord MCP server for Chadrien Solance - presence-synced, with Claude integration",
+  "main": "dist/mcp-server.js",
+  "type": "module",
+  "bin": {
+    "chadrien-discord": "./dist/mcp-server.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node dist/mcp-server.js",
+    "start:old": "npm run build && node dist/index.js",
+    "dev": "tsx watch src/mcp-server.ts",
+    "dev:old": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "@anthropic-ai/sdk": "^0.27.3",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "dotenv": "^16.3.1",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "typescript": "^5.3.3",
+    "tsx": "^4.7.0"
+  }
+}
