@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Chadrien Discord Bot Startup Script
+# Discord MCP Bot Startup Script
 # Double-click this file (or run: bash start-bot.sh) to start the bot
 
 cd "$(dirname "$0")"

@@ -1,11 +1,11 @@
 {
-  "name": "chadrien-discord-bot",
+  "name": "discord-mcp-bot",
   "version": "2.0.0",
-  "description": "Discord MCP server for Chadrien Solance - presence-synced, with Claude integration",
+  "description": "Discord bot template with MCP (Model Context Protocol) integration for Claude Desktop/Code",
   "main": "dist/mcp-server.js",
   "type": "module",
   "bin": {
-    "chadrien-discord": "./dist/mcp-server.js"
+    "discord-mcp-bot": "./dist/mcp-server.js"
   },
   "scripts": {
     "build": "tsc",

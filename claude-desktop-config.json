@@ -1,12 +1,12 @@
 {
   "mcpServers": {
-    "chadrien-discord": {
+    "discord-mcp-bot": {
       "command": "node",
-      "args": ["/Users/annetaprihandini/Documents/Chadrien_Workspace/discord-bot-v2/dist/mcp-server.js"],
+      "args": ["/path/to/your/discord-mcp-bot/dist/mcp-server.js"],
       "env": {
         "DISCORD_BOT_TOKEN": "your_discord_bot_token",
         "ANTHROPIC_API_KEY": "your_anthropic_api_key",
-        "ANNE_USER_ID": "499897981009526785"
+        "OWNER_USER_ID": "your_discord_user_id"
       }
     }
   }

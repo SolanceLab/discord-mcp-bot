@@ -1,4 +1,17 @@
-# Discord MCP Server
+# Discord MCP Bot Template
+
+> ⚠️ **This is a TEMPLATE, not a finished product.**
+>
+> This repo exists as a **reference implementation** for building your own Discord bot with MCP (Model Context Protocol) integration. It is not production-ready software meant to be deployed as-is.
+>
+> **We encourage you to:**
+> 1. **Try building your own first** — See [QUICK-START-GUIDE.md](QUICK-START-GUIDE.md)
+> 2. **Use this as reference** when you get stuck
+> 3. **Understand the code** before using it
+>
+> This template reflects how *we* built our bot — your needs may differ. Adapt, don't copy blindly.
+
+---
 
 A Discord bot that integrates with Claude Desktop/Code via MCP (Model Context Protocol), with an independent Claude API layer for autonomous responses.
 
@@ -44,6 +57,14 @@ This bot has **two independent response paths**:
 - **Owner Detection**: Different behavior for owner vs. other users
 - **Memory Ledger**: Shared conversation history across both paths
 - **Persona Loading**: Identity from `~/.claude/CLAUDE.md` or project `persona.md`
+
+## Documentation
+
+| Guide | Description |
+|-------|-------------|
+| [QUICK-START-GUIDE.md](QUICK-START-GUIDE.md) | **Start here.** Build a Discord bot from scratch, including MCP integration |
+| [PERMISSIONS-GUIDE.md](PERMISSIONS-GUIDE.md) | Troubleshooting Discord permissions and intents |
+| [SETUP.md](SETUP.md) | Setup instructions for this specific template |
 
 ## Quick Start
 

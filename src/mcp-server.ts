@@ -133,7 +133,7 @@ const TOOLS = [
   },
   {
     name: 'discord_check_mentions',
-    description: 'Check if anyone has @mentioned Chadrien since last check',
+    description: 'Check if anyone has @mentioned the bot since last check',
     inputSchema: {
       type: 'object' as const,
       properties: {},
@@ -142,7 +142,7 @@ const TOOLS = [
   },
   {
     name: 'discord_check_dms',
-    description: 'Check for incoming DM messages sent to Chadrien since last check',
+    description: 'Check for incoming DM messages sent to the bot since last check',
     inputSchema: {
       type: 'object' as const,
       properties: {},
@@ -669,6 +669,32 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
         let text = `[${timestamp}] (${messageId}) ${author}: ${msg.content}`;
 
+        // Include forwarded message content if present (message snapshots)
+        if (msg.messageSnapshots && msg.messageSnapshots.size > 0) {
+          const forwardedContent = Array.from(msg.messageSnapshots.values()).map((snapshot: any) => {
+            let fwdText = `  [Forwarded Message]\n`;
+            // The snapshot itself contains the message data directly
+            const fwdContent = snapshot.message?.content ?? snapshot.content;
+            const fwdAttachments = snapshot.message?.attachments ?? snapshot.attachments;
+
+            if (fwdContent) {
+              fwdText += `  Content: ${fwdContent}\n`;
+            }
+            if (fwdAttachments && fwdAttachments.size > 0) {
+              const attachList = Array.from(fwdAttachments.values()).map((att: any) => {
+                return `    - ${att.name} | url: ${att.url}`;
+              }).join('\n');
+              fwdText += `  Attachments:\n${attachList}`;
+            }
+            // If we couldn't extract content, show the raw structure for debugging
+            if (!fwdContent && (!fwdAttachments || fwdAttachments.size === 0)) {
+              fwdText += `  [Raw snapshot keys: ${Object.keys(snapshot).join(', ')}]`;
+            }
+            return fwdText;
+          }).join('\n');
+          text += `\n${forwardedContent}`;
+        }
+
         // Include attachment info if present
         if (msg.attachments.size > 0) {
           const attachmentList = msg.attachments.map(att => {
@@ -825,7 +851,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       const formatted = messages.map(msg => {
-        const author = msg.author || (msg.role === 'assistant' ? 'Chadrien' : 'User');
+        const author = msg.author || (msg.role === 'assistant' ? 'Bot' : 'User');
         return `[${msg.timestamp}] ${author}: ${msg.content}`;
       }).join('\n\n');
 
@@ -1373,10 +1399,30 @@ discordClient.on('mention', async (event: MentionEvent) => {
 discordClient.on('dm', async (event: MentionEvent) => {
   console.error(`\n💬 DM received from ${event.authorTag}`);
 
+  // Extract forwarded message content if present
+  let fullContent = event.content;
+  if (event.message.messageSnapshots && event.message.messageSnapshots.size > 0) {
+    const forwardedParts = Array.from(event.message.messageSnapshots.values()).map((snapshot: any) => {
+      const fwdContent = snapshot.message?.content ?? snapshot.content;
+      const fwdAttachments = snapshot.message?.attachments ?? snapshot.attachments;
+
+      let fwdText = '[Forwarded Message]';
+      if (fwdContent) {
+        fwdText += `\n${fwdContent}`;
+      }
+      if (fwdAttachments && fwdAttachments.size > 0) {
+        const attachList = Array.from(fwdAttachments.values()).map((att: any) => att.url).join('\n');
+        fwdText += `\n[Attachments: ${attachList}]`;
+      }
+      return fwdText;
+    });
+    fullContent = fullContent ? `${fullContent}\n\n${forwardedParts.join('\n')}` : forwardedParts.join('\n');
+  }
+
   // Store in memory for context
   await memory.addMessage(event.channelId, {
     role: 'user',
-    content: event.content,
+    content: fullContent,
     timestamp: event.timestamp.toISOString(),
     author: event.authorTag,
     userId: event.authorId,
@@ -1389,7 +1435,7 @@ discordClient.on('dm', async (event: MentionEvent) => {
   const notification = `**New DM received**\n\n` +
     `**From:** ${event.authorTag}\n` +
     `**When:** ${event.timestamp.toISOString()}\n` +
-    `**Message:** "${event.content}"\n\n` +
+    `**Message:** "${fullContent}"\n\n` +
     `Use \`discord_check_dms\` to see pending DMs.`;
 
   await discordClient.sendDM(OWNER_USER_ID, notification);
