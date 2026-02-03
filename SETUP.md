@@ -1,8 +1,9 @@
 # Discord MCP Bot Setup Guide
 
-A Discord bot with **two response paths**:
-1. **MCP Tools** — Claude Desktop/Code controls the bot directly
-2. **Claude API Auto-Response** — Bot responds to @mentions autonomously (even when Claude Desktop is closed)
+A Discord bot with **three deployment modes**:
+1. **Local Direct** — MCP server runs locally, Claude Desktop/Code controls the bot directly
+2. **Cloud** — Bot runs 24/7 on Fly.io with HTTP API and auto-responses
+3. **Proxy** — Local MCP server forwards tool calls to cloud instance
 
 ---
 
@@ -10,21 +11,28 @@ A Discord bot with **two response paths**:
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
-│  PATH 1: MCP Tools                                             │
+│  MODE 1: Local Direct                                          │
 │  Claude Desktop/Code ←→ MCP Server ←→ Discord                  │
 │  • You control the bot through Claude                          │
-│  • 20+ tools: read, send, manage channels, moderate, etc.      │
-│  • Requires Claude Desktop/Code to be open                     │
+│  • 26 tools: read, send, manage channels, moderate, etc.       │
+│  • Bot auto-responds to @mentions via Claude API               │
+│  • Requires your machine to be running                         │
 ├────────────────────────────────────────────────────────────────┤
-│  PATH 2: Claude API Auto-Response (Always Running)             │
-│  Discord @mention → MCP Server → Claude API → Discord          │
-│  • Bot auto-responds when owner @mentions it                   │
-│  • Others who @mention → owner gets DM notification            │
-│  • Works 24/7 while the MCP server is running                  │
+│  MODE 2: Cloud (Fly.io)                                        │
+│  Discord ←──WebSocket──→ Cloud Server ←──→ HTTP API            │
+│  • Bot runs 24/7 on Fly.io (or any cloud provider)             │
+│  • HTTP API with bearer token auth + rate limiting             │
+│  • Auto-responds to owner @mentions via Claude API             │
+├────────────────────────────────────────────────────────────────┤
+│  MODE 3: Proxy                                                 │
+│  Claude Desktop/Code ←→ MCP Server ──HTTP──→ Cloud Server      │
+│  • Best of both: Claude tools + 24/7 cloud uptime              │
+│  • Local MCP server forwards tool calls to cloud via HTTP      │
+│  • No duplicate Discord connections                            │
 └────────────────────────────────────────────────────────────────┘
 ```
 
-**Both paths share:** Discord connection, memory ledger, persona file.
+**All modes share:** Discord connection, memory ledger, persona file.
 
 ---
 
@@ -153,7 +161,7 @@ In Claude Desktop, try:
 
 ---
 
-## MCP Tools Available (20+ Total)
+## MCP Tools Available (26 Total)
 
 ### Core
 | Tool | Description |
@@ -161,6 +169,7 @@ In Claude Desktop, try:
 | `discord_read_messages` | Read recent messages (includes attachments) |
 | `discord_send_message` | Send a message to a channel |
 | `discord_send_dm` | Send a DM to a user |
+| `discord_send_file` | Send a file/attachment to a channel |
 | `discord_check_mentions` | Check pending @mentions |
 | `discord_check_dms` | Check pending DMs |
 | `discord_get_history` | Get conversation history |
@@ -180,6 +189,8 @@ In Claude Desktop, try:
 | Tool | Description |
 |------|-------------|
 | `discord_add_reaction` | React to a message |
+| `discord_get_reactions` | Get all reactions on a message with user lists |
+| `discord_create_poll` | Create a native Discord poll |
 | `discord_edit_message` | Edit bot's own messages |
 | `discord_delete_message` | Delete messages |
 | `discord_pin_message` | Pin a message |
@@ -225,6 +236,127 @@ This is what makes the bot "alive" even when Claude Desktop is closed.
 
 ---
 
+## Step 8: Cloud Deployment (Optional)
+
+If you want your bot running 24/7 without keeping your machine on, deploy to the cloud.
+
+### Prerequisites
+
+- [Fly.io CLI](https://fly.io/docs/getting-started/installing-flyctl/) installed
+- Fly.io account (free tier works)
+
+### Deploy to Fly.io
+
+1. Build the project:
+   ```bash
+   npm run build
+   ```
+
+2. Copy and edit the Fly.io config:
+   ```bash
+   cp fly.toml.example fly.toml
+   ```
+   Edit `fly.toml` — change `app = "your-discord-bot-app-name"` to your app name.
+
+3. Create the app (first time only):
+   ```bash
+   fly apps create your-discord-bot-app-name
+   ```
+
+4. Set secrets:
+   ```bash
+   fly secrets set \
+     DISCORD_BOT_TOKEN=your_token \
+     ANTHROPIC_API_KEY=your_key \
+     OWNER_USER_ID=your_user_id \
+     BOT_API_SECRET=your_secret
+   ```
+
+   Generate `BOT_API_SECRET` with:
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   ```
+
+5. Deploy:
+   ```bash
+   fly deploy
+   ```
+
+6. Check it's running:
+   ```bash
+   fly status
+   fly logs
+   ```
+
+### Important Notes
+
+- **Only one instance** — The bot maintains a single Discord WebSocket connection. `fly.toml.example` is configured for `max_machines_running = 1`.
+- **Always running** — `auto_stop_machines = "off"` keeps the bot alive 24/7 for the Discord WebSocket.
+- **Stop local first** — Before deploying, stop any local instance to avoid duplicate connections.
+
+---
+
+## Step 9: Proxy Mode (Optional)
+
+Proxy mode gives you the best of both worlds: Claude Desktop/Code tools + 24/7 cloud uptime. Your local MCP server becomes a thin HTTP client that forwards all tool calls to your cloud instance.
+
+### Configure
+
+Add these to your `.env`:
+
+```env
+BOT_API_URL=https://your-app.fly.dev
+BOT_API_SECRET=your_shared_secret
+```
+
+The `BOT_API_SECRET` must match what you set as a Fly.io secret.
+
+### How It Works
+
+When `BOT_API_URL` is set, the MCP server automatically switches to proxy mode:
+- All 26 tools are still available to Claude
+- Tool calls are forwarded to the cloud instance via HTTP
+- Attachment downloads go through the cloud (CDN URLs fetched remotely, saved locally)
+- No local Discord connection — the cloud instance handles that
+
+### When to Use Each Mode
+
+| Scenario | Mode |
+|----------|------|
+| Testing and development | Local Direct |
+| 24/7 bot with auto-responses only | Cloud |
+| 24/7 bot + Claude Desktop/Code tools | Proxy + Cloud |
+
+---
+
+## File Structure
+
+```
+discord-mcp-bot/
+├── src/
+│   ├── mcp-server.ts      # MCP server — local direct or proxy mode
+│   ├── cloud-server.ts    # Cloud entry point (Fly.io)
+│   ├── http-server.ts     # Express HTTP API with auth + rate limiting
+│   ├── discord-client.ts  # Discord.js client wrapper (26 methods)
+│   ├── claude.ts          # Anthropic API client
+│   ├── memory.ts          # Memory ledger + optional external API sync
+│   ├── logger.ts          # Persistent logging with rotation
+│   ├── types.ts           # TypeScript types
+│   └── index.ts           # Standalone entry point (legacy)
+├── dist/                  # Compiled JavaScript
+├── Dockerfile             # Container build for cloud deployment
+├── fly.toml.example       # Fly.io config template
+├── .env                   # Your credentials (create from template)
+├── .env.template          # Template for credentials
+├── persona.md             # Your bot's personality (create from template)
+├── persona.example.md     # Example persona
+├── memory-ledger.json     # Conversation history (auto-created)
+├── SETUP.md               # This file
+└── README.md              # Architecture overview
+```
+
+---
+
 ## Troubleshooting
 
 ### Bot doesn't respond to @mentions
@@ -239,31 +371,25 @@ This is what makes the bot "alive" even when Claude Desktop is closed.
 ### Multiple responses / duplicate messages
 - Kill old processes: `pkill -f "mcp-server.js"`
 - Restart Claude Desktop
+- If using cloud: make sure local instance is stopped
 
 ### Tools not appearing in Claude
 - Restart Claude Desktop after editing config
 - Check the path in `claude_desktop_config.json` is correct
 - Check Claude Desktop logs for errors
 
----
+### Cloud bot not responding
+- Check logs: `fly logs`
+- Verify secrets are set: `fly secrets list`
+- Check health: `curl https://your-app.fly.dev/health`
 
-## File Structure
-
-```
-discord-mcp-bot/
-├── src/                    # Source code (TypeScript)
-├── dist/                   # Compiled code (after npm run build)
-├── .env                    # Your credentials (create from template)
-├── .env.template           # Template for credentials
-├── persona.md              # Your bot's personality (create from template)
-├── persona.example.md      # Example persona
-├── memory-ledger.json      # Conversation history (auto-created)
-├── SETUP.md                # This file
-└── README.md               # Architecture overview
-```
+### Proxy mode not connecting
+- Verify `BOT_API_URL` is correct in `.env`
+- Verify `BOT_API_SECRET` matches between local `.env` and Fly.io secrets
+- Check cloud instance is running: `fly status`
 
 ---
 
 ## Questions?
 
-Open an issue on GitHub!
+Open an issue on [GitHub](https://github.com/SolanceLab/discord-mcp-bot/issues)!

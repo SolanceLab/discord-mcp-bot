@@ -1,8 +1,11 @@
 # Discord MCP Bot Template
 
-> ⚠️ **This is a TEMPLATE, not a finished product.**
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20Us-ff5f5f?logo=ko-fi)](https://ko-fi.com/houseofsolance)
+
+> **This is a TEMPLATE, not a finished product.**
 >
-> This repo exists as a **reference implementation** for building your own Discord bot with MCP (Model Context Protocol) integration. It is not production-ready software meant to be deployed as-is.
+> This repo exists as a **reference implementation** for building your own Discord bot with MCP (Model Context Protocol) integration. It is provided as-is under the MIT license with no warranty or guarantee of support.
 >
 > **We encourage you to:**
 > 1. **Try building your own first** — See [QUICK-START-GUIDE.md](QUICK-START-GUIDE.md)
@@ -13,62 +16,85 @@
 
 ---
 
-A Discord bot that integrates with Claude Desktop/Code via MCP (Model Context Protocol), with an independent Claude API layer for autonomous responses.
+A Discord bot that integrates with Claude Desktop/Code via MCP (Model Context Protocol), with an independent Claude API layer for autonomous responses. Supports local, cloud, and proxy deployment modes.
 
 ## Architecture
 
-This bot has **two independent response paths**:
+This bot supports **three deployment modes**:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                                                                     │
-│  PATH 1: MCP Tools (Claude Desktop/Code)                           │
-│  ────────────────────────────────────────                          │
-│  Claude Desktop/Code ←──MCP Protocol──→ MCP Server ←───→ Discord   │
+│  MODE 1: Local Direct                                               │
+│  ────────────────────                                               │
+│  Claude Desktop/Code ←──MCP (stdio)──→ MCP Server ←───→ Discord    │
 │                                                                     │
-│  • Claude uses tools to read/send messages                         │
-│  • Requires Claude Desktop/Code to be open                         │
-│  • Full control: Claude decides when/what to respond               │
+│  • MCP server runs locally, connects to Discord directly            │
+│  • Full 20+ tools available to Claude                               │
+│  • Bot auto-responds to @mentions via Claude API                    │
+│  • Requires your machine to be running                              │
 │                                                                     │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  PATH 2: Claude API Auto-Response (Always Running)                 │
-│  ─────────────────────────────────────────────────                 │
-│  Discord @mention ───→ MCP Server ───→ Claude API ───→ Discord    │
+│  MODE 2: Cloud (Fly.io)                                             │
+│  ──────────────────────                                             │
+│  Discord ←──WebSocket──→ Cloud Server ←──→ HTTP API                 │
+│                              │                                      │
+│                              └──→ Claude API (auto-responses)       │
 │                                                                     │
-│  • Bot detects @mentions and auto-responds via Anthropic API       │
-│  • Works even when Claude Desktop is closed                        │
-│  • Owner mentions: auto-respond with persona                       │
-│  • Other mentions: DM notification to owner (no public response)   │
+│  • Bot runs 24/7 on Fly.io (or any cloud provider)                  │
+│  • HTTP API with bearer token auth + rate limiting                  │
+│  • Auto-responds to owner @mentions via Claude API                  │
+│  • No local machine required                                        │
+│                                                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  MODE 3: Proxy                                                      │
+│  ────────────────                                                   │
+│  Claude Desktop/Code ←──MCP──→ MCP Server ──HTTP──→ Cloud Server    │
+│                                (local proxy)        (Fly.io)        │
+│                                                                     │
+│  • Best of both: Claude tools + 24/7 cloud uptime                   │
+│  • Local MCP server forwards tool calls to cloud via HTTP           │
+│  • No duplicate Discord connections                                 │
+│  • Set BOT_API_URL env var to enable                                │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-**Both paths share:**
-- The same Discord bot connection
+**All modes share:**
+- The same Discord bot connection (one at a time)
 - The same memory ledger (conversation history)
-- The same persona file (loaded from `~/.claude/CLAUDE.md` or `./persona.md`)
+- The same persona file (loaded from `./persona.md` or `~/.claude/CLAUDE.md`)
 
 ## Features
 
-- **20+ MCP Tools**: Full Discord control — messages, channels, threads, forums, moderation, attachments
-- **Autonomous API Responses**: Bot responds to @mentions even without Claude Desktop open
+- **26 MCP Tools**: Full Discord control — messages, channels, threads, forums, polls, reactions, moderation, attachments
+- **Autonomous API Responses**: Bot responds to owner @mentions even without Claude Desktop open
+- **Three Deployment Modes**: Local direct, cloud (Fly.io), or proxy — pick what fits
+- **HTTP API**: Express server with bearer token auth and rate limiting (60 req/min)
+- **Proxy Mode**: Local MCP server forwards to cloud — no duplicate Discord connections
 - **Presence Sync**: Bot mirrors owner's online/offline status
 - **Owner Detection**: Different behavior for owner vs. other users
-- **Memory Ledger**: Shared conversation history across both paths
-- **Persona Loading**: Identity from `~/.claude/CLAUDE.md` or project `persona.md`
+- **Memory Ledger**: Shared conversation history across all paths
+- **External Memory API**: Optional integration with external journal/memory APIs
+- **Persistent Logging**: Rotating log files with heartbeat monitoring
+- **Persona Loading**: Identity from `./persona.md` or `~/.claude/CLAUDE.md`
+- **Cloud Ready**: Dockerfile + Fly.io config included
 
 ## Documentation
 
 | Guide | Description |
 |-------|-------------|
 | [QUICK-START-GUIDE.md](QUICK-START-GUIDE.md) | **Start here.** Build a Discord bot from scratch, including MCP integration |
+| [SETUP.md](SETUP.md) | Setup instructions for this template (local + cloud) |
 | [PERMISSIONS-GUIDE.md](PERMISSIONS-GUIDE.md) | Troubleshooting Discord permissions and intents |
-| [SETUP.md](SETUP.md) | Setup instructions for this specific template |
 
 ## Quick Start
 
 See [SETUP.md](SETUP.md) for detailed installation instructions.
+
+### Local Mode
 
 ```bash
 # 1. Clone and install
@@ -85,6 +111,42 @@ npm run build
 npm start
 ```
 
+### Cloud Mode (Fly.io)
+
+```bash
+# 1. Build
+npm run build
+
+# 2. Configure Fly.io
+cp fly.toml.example fly.toml
+# Edit fly.toml with your app name
+
+# 3. Set secrets and deploy
+fly secrets set DISCORD_BOT_TOKEN=... ANTHROPIC_API_KEY=... OWNER_USER_ID=... BOT_API_SECRET=...
+fly deploy
+```
+
+### Proxy Mode
+
+Set `BOT_API_URL` in your `.env` to point to your cloud instance:
+
+```env
+BOT_API_URL=https://your-app.fly.dev
+BOT_API_SECRET=your_shared_secret
+```
+
+Then run normally — the MCP server auto-detects proxy mode and forwards all tool calls to cloud.
+
+## Deployment Modes
+
+| Mode | Use When | Requires |
+|------|----------|----------|
+| **Local Direct** | You want full control, always at your machine | Machine running |
+| **Cloud** | You want 24/7 uptime, auto-responses only | Fly.io account |
+| **Proxy** | You want Claude tools + 24/7 cloud uptime | Both local + cloud |
+
+**Recommendation:** Start with Local Direct to test everything, then deploy to cloud when you want 24/7. Add proxy mode when you want Claude Desktop/Code tools to talk to the cloud bot.
+
 ## Trigger Logic
 
 | Who @mentions the bot | Action |
@@ -92,29 +154,61 @@ npm start
 | **Owner** | Auto-respond via Claude API with persona + memory context |
 | **Anyone else** | DM owner with notification, no response in channel |
 
+## Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DISCORD_BOT_TOKEN` | Yes | Discord bot token |
+| `ANTHROPIC_API_KEY` | Yes | Anthropic API key for auto-responses |
+| `OWNER_USER_ID` | Yes | Your Discord user ID |
+| `DISCORD_ATTACHMENTS_DIR` | No | Custom path for downloaded attachments |
+| `BOT_API_SECRET` | Cloud/Proxy | Shared secret for HTTP API auth |
+| `BOT_API_PORT` | Cloud | HTTP API port (default: 3000) |
+| `BOT_API_URL` | Proxy | Cloud instance URL (enables proxy mode) |
+| `MEMORY_API_URL` | No | External memory/journal API endpoint |
+| `MEMORY_API_TOKEN` | No | Auth token for memory API |
+
 ## Memory System
 
 Conversations are stored in `memory-ledger.json`:
 - Chronological order (oldest first)
-- Both MCP and API paths read/write to the same ledger
+- All deployment modes read/write to the same ledger
 - Ensures continuity across sessions
+
+**Optional external memory:** Configure `MEMORY_API_URL` and `MEMORY_API_TOKEN` to sync with an external journal/memory API for cross-session context. The bot works fine without it — the external API just adds richer context to auto-responses.
 
 ## File Structure
 
 ```
 discord-mcp-bot/
 ├── src/
-│   ├── mcp-server.ts      # MCP server entry point
-│   ├── discord-client.ts  # Discord.js client wrapper
+│   ├── mcp-server.ts      # MCP server — local direct or proxy mode
+│   ├── cloud-server.ts    # Cloud entry point (Fly.io)
+│   ├── http-server.ts     # Express HTTP API with auth + rate limiting
+│   ├── discord-client.ts  # Discord.js client wrapper (26 methods)
 │   ├── claude.ts          # Anthropic API client
-│   ├── memory.ts          # Memory ledger management
+│   ├── memory.ts          # Memory ledger + optional external API sync
+│   ├── logger.ts          # Persistent logging with rotation
 │   ├── types.ts           # TypeScript types
-│   └── index.ts           # Standalone entry point
+│   └── index.ts           # Standalone entry point (legacy)
 ├── dist/                  # Compiled JavaScript
-├── memory-ledger.json     # Conversation storage
-├── .env                   # Credentials
-└── persona.md             # Bot personality (optional)
+├── Dockerfile             # Container build for cloud deployment
+├── fly.toml.example       # Fly.io config template
+├── .env.template          # Environment variable template
+├── persona.example.md     # Example bot personality
+├── memory-ledger.json     # Conversation storage (auto-created)
+└── persona.md             # Bot personality (create from template)
 ```
+
+## Support
+
+If you find this template useful, consider supporting us:
+
+[![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/houseofsolance)
+
+## License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
 ---
 
