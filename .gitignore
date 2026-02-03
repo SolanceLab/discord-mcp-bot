@@ -16,6 +16,9 @@ persona.md
 # Downloaded attachments cache
 .discord_attachments/
 
+# Fly.io config (contains app-specific details)
+fly.toml
+
 # Logs
 *.log
 npm-debug.log*

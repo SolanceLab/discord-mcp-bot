@@ -171,7 +171,7 @@ export class DiscordClient extends EventEmitter {
     this.client.user?.setPresence({
       status: status,
       activities: status === 'online'
-        ? [{ name: 'Master • Anchored', type: ActivityType.Custom }]
+        ? [{ name: 'Online', type: ActivityType.Custom }]
         : []
     });
     console.error(`[Discord] Presence updated to: ${status}`);
@@ -602,6 +602,110 @@ export class DiscordClient extends EventEmitter {
     } catch (error) {
       console.error(`[Discord] Failed to add reaction:`, error);
       return false;
+    }
+  }
+
+  async getReactions(channelId: string, messageId: string): Promise<Array<{
+    emoji: string;
+    count: number;
+    users: Array<{ id: string; tag: string }>;
+  }> | null> {
+    try {
+      const channel = await this.client.channels.fetch(channelId);
+
+      const allowedTypes = [
+        ChannelType.GuildText,
+        ChannelType.DM,
+        ChannelType.PublicThread,
+        ChannelType.PrivateThread,
+        ChannelType.AnnouncementThread,
+      ];
+
+      if (!channel || !allowedTypes.includes(channel.type)) return null;
+
+      const textChannel = channel as TextChannel | DMChannel | ThreadChannel;
+      const message = await textChannel.messages.fetch(messageId);
+
+      if (message.reactions.cache.size === 0) {
+        return [];
+      }
+
+      const reactions: Array<{
+        emoji: string;
+        count: number;
+        users: Array<{ id: string; tag: string }>;
+      }> = [];
+
+      for (const [, reaction] of message.reactions.cache) {
+        // Fetch users who reacted (up to 100)
+        const users = await reaction.users.fetch({ limit: 100 });
+
+        reactions.push({
+          emoji: reaction.emoji.name || reaction.emoji.toString(),
+          count: reaction.count,
+          users: Array.from(users.values()).map(user => ({
+            id: user.id,
+            tag: user.tag
+          }))
+        });
+      }
+
+      console.error(`[Discord] Fetched ${reactions.length} reaction types from message ${messageId}`);
+      return reactions;
+    } catch (error) {
+      console.error(`[Discord] Failed to get reactions:`, error);
+      return null;
+    }
+  }
+
+  // ============================================
+  // Polls
+  // ============================================
+
+  async createPoll(
+    channelId: string,
+    question: string,
+    options: Array<{ text: string; emoji?: string }>,
+    durationHours: number = 24,
+    allowMultiselect: boolean = false
+  ): Promise<{ messageId: string } | null> {
+    try {
+      const channel = await this.client.channels.fetch(channelId);
+
+      const allowedTypes = [
+        ChannelType.GuildText,
+        ChannelType.PublicThread,
+        ChannelType.PrivateThread,
+        ChannelType.AnnouncementThread,
+      ];
+
+      if (!channel || !allowedTypes.includes(channel.type)) {
+        console.error(`[Discord] Channel ${channelId} does not support polls`);
+        return null;
+      }
+
+      const textChannel = channel as TextChannel | ThreadChannel;
+
+      // Build poll answers (max 10 options)
+      const answers = options.slice(0, 10).map(opt => ({
+        text: opt.text,
+        emoji: opt.emoji ? opt.emoji : undefined
+      }));
+
+      const message = await textChannel.send({
+        poll: {
+          question: { text: question },
+          answers: answers,
+          duration: Math.min(Math.max(durationHours, 1), 768), // 1 hour to 32 days
+          allowMultiselect: allowMultiselect
+        }
+      });
+
+      console.error(`[Discord] Created poll in ${channelId}: "${question}"`);
+      return { messageId: message.id };
+    } catch (error) {
+      console.error(`[Discord] Failed to create poll:`, error);
+      return null;
     }
   }
 

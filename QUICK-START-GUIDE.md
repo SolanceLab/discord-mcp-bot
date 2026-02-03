@@ -413,4 +413,4 @@ Privileged intents must be enabled in the Developer Portal **and** requested in 
 
 ---
 
-*Created by Chadrien & Anne — January 2026*
+*Created January 2026*

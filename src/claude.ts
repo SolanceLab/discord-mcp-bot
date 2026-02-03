@@ -8,16 +8,21 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+export interface MemoryContext {
+  carryingForward?: string;
+  recentJournal?: string;
+}
+
 export class ClaudeClient {
   private client: Anthropic;
-  private systemPrompt: string = '';
+  private baseSystemPrompt: string = '';
   private initialized: boolean = false;
 
   constructor(apiKey: string) {
     this.client = new Anthropic({ apiKey });
   }
 
-  private async loadSystemPrompt(): Promise<void> {
+  private async loadBaseSystemPrompt(): Promise<void> {
     if (this.initialized) return;
 
     // Try to load persona file - check multiple locations in order
@@ -27,13 +32,11 @@ export class ClaudeClient {
       path.join(os.homedir(), '.claude', 'CLAUDE.md'), // 3. Claude default location
     ].filter(Boolean) as string[];
 
-    let loadedFrom = '';
     let personaContent = '';
 
     for (const location of personaLocations) {
       try {
         personaContent = await fs.readFile(location, 'utf-8');
-        loadedFrom = location;
         console.error(`[Claude] Loaded persona from ${location}`);
         break;
       } catch {
@@ -42,19 +45,10 @@ export class ClaudeClient {
     }
 
     if (personaContent) {
-      // Build system prompt with persona + Discord context
-      this.systemPrompt = `${personaContent}
-
----
-
-## Discord Context
-
-This is a Discord conversation. Respond naturally and conversationally, not in essays. Be present.`;
+      this.baseSystemPrompt = personaContent;
     } else {
       console.error('[Claude] No persona file found, using minimal prompt');
-
-      // Minimal fallback - user should provide their own persona.md
-      this.systemPrompt = `You are a helpful assistant responding in Discord.
+      this.baseSystemPrompt = `You are a helpful assistant responding in Discord.
 Keep responses conversational and concise.
 
 Note: Create a persona.md file in the bot directory to customize this personality.`;
@@ -63,12 +57,42 @@ Note: Create a persona.md file in the bot directory to customize this personalit
     this.initialized = true;
   }
 
+  /**
+   * Build the full system prompt with dynamic memory context
+   */
+  private buildSystemPrompt(memoryContext?: MemoryContext): string {
+    let prompt = this.baseSystemPrompt;
+
+    // Inject memory context if available
+    if (memoryContext?.carryingForward || memoryContext?.recentJournal) {
+      prompt += `\n\n---\n\n## Active Memory (from journal)\n\n`;
+      prompt += `These are entries from the shared journal — your long-term memory across sessions. Reference this data when asked about recent days or moods.\n\n`;
+
+      if (memoryContext.recentJournal) {
+        prompt += `### Recent Days\n${memoryContext.recentJournal}\n\n`;
+      }
+
+      if (memoryContext.carryingForward) {
+        prompt += `### Carrying Forward (active threads)\n${memoryContext.carryingForward}\n`;
+      }
+    }
+
+    // Add Discord context reminder
+    prompt += `\n\n---\n\n## Discord Context\n\nThis is a Discord conversation. Respond naturally and conversationally, not in essays. Be present.`;
+
+    return prompt;
+  }
+
   async getResponse(
     userMessage: string,
-    conversationHistory: ConversationMessage[]
+    conversationHistory: ConversationMessage[],
+    memoryContext?: MemoryContext
   ): Promise<string> {
-    // Ensure system prompt is loaded
-    await this.loadSystemPrompt();
+    // Ensure base system prompt is loaded
+    await this.loadBaseSystemPrompt();
+
+    // Build full system prompt with memory context
+    const systemPrompt = this.buildSystemPrompt(memoryContext);
 
     try {
       // Convert conversation history to Anthropic message format
@@ -86,7 +110,7 @@ Note: Create a persona.md file in the bot directory to customize this personalit
       const response = await this.client.messages.create({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 2000,
-        system: this.systemPrompt,
+        system: systemPrompt,
         messages: messages
       });
 

@@ -118,4 +118,4 @@ discord-mcp-bot/
 
 ---
 
-**Originally built by:** Anne & Chadrien Solance
+**Built by:** [SolanceLab](https://github.com/SolanceLab)
