@@ -222,6 +222,23 @@ discord-mcp-bot/
 └── persona.md             # Bot personality (create from template)
 ```
 
+## Security Considerations
+
+This template involves deploying to third-party cloud services. When using cloud modes, you are trusting these providers with your credentials:
+
+| Provider | What They Store | Used In |
+|----------|-----------------|---------|
+| **Fly.io** | Discord bot token, Anthropic API key, bot secrets | Modes 2, 3, 4 |
+| **Cloudflare** | Connector API key, Fly.io URL and secret | Mode 4 only |
+
+This is standard practice for cloud deployments — the same trust model applies to any cloud-hosted application. These providers have robust security practices, but if credential custody concerns you:
+
+- Use **Local Direct mode** only (Mode 1) — no cloud dependency
+- Self-host on your own infrastructure
+- Review each provider's security documentation ([Fly.io](https://fly.io/docs/security/), [Cloudflare](https://www.cloudflare.com/trust-hub/))
+
+**API key management:** Never commit secrets to git. Use environment variables locally and secret management (Fly.io secrets, Cloudflare secrets) in production.
+
 ## Support
 
 If you find this template useful, consider supporting us:
