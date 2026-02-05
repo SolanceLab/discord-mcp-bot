@@ -1,0 +1,19 @@
+{
+  "name": "discord-mcp-cloud-connector",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker MCP adapter for the Discord bot",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.25.3",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250124.0",
+    "typescript": "^5.7.0",
+    "wrangler": "^4.0.0"
+  }
+}

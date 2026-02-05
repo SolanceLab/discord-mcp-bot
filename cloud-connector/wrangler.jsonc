@@ -1,0 +1,6 @@
+{
+  "name": "discord-mcp-cloud",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-02-01",
+  "compatibility_flags": ["nodejs_compat"]
+}

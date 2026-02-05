@@ -16,11 +16,11 @@
 
 ---
 
-A Discord bot that integrates with Claude Desktop/Code via MCP (Model Context Protocol), with an independent Claude API layer for autonomous responses. Supports local, cloud, and proxy deployment modes.
+A Discord bot that integrates with Claude Desktop/Code via MCP (Model Context Protocol), with an independent Claude API layer for autonomous responses. Supports local, cloud, proxy, and cloud connector deployment modes.
 
 ## Architecture
 
-This bot supports **three deployment modes**:
+This bot supports **four deployment modes**:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -58,6 +58,18 @@ This bot supports **three deployment modes**:
 │  • Local MCP server forwards tool calls to cloud via HTTP           │
 │  • No duplicate Discord connections                                 │
 │  • Set BOT_API_URL env var to enable                                │
+│                                                                     │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  MODE 4: Cloud Connector (Cloudflare Worker)                        │
+│  ───────────────────────────────────────────                        │
+│  Claude.ai ←──MCP/HTTP──→ Cloudflare Worker ──HTTP──→ Cloud Server  │
+│  (web/mobile)              (MCP adapter)              (Fly.io)      │
+│                                                                     │
+│  • Access Discord from Claude.ai web or mobile app                  │
+│  • No laptop required — works from phone/tablet                     │
+│  • Worker translates MCP protocol to HTTP API calls                 │
+│  • See /cloud-connector for setup                                   │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -144,8 +156,9 @@ Then run normally — the MCP server auto-detects proxy mode and forwards all to
 | **Local Direct** | You want full control, always at your machine | Machine running |
 | **Cloud** | You want 24/7 uptime, auto-responses only | Fly.io account |
 | **Proxy** | You want Claude tools + 24/7 cloud uptime | Both local + cloud |
+| **Cloud Connector** | You want Discord tools from phone/browser | Cloud + Cloudflare |
 
-**Recommendation:** Start with Local Direct to test everything, then deploy to cloud when you want 24/7. Add proxy mode when you want Claude Desktop/Code tools to talk to the cloud bot.
+**Recommendation:** Start with Local Direct to test everything, then deploy to cloud when you want 24/7. Add proxy mode when you want Claude Desktop/Code tools to talk to the cloud bot. Add the cloud connector when you want Discord access from Claude.ai web/mobile.
 
 ## Trigger Logic
 
@@ -191,6 +204,15 @@ discord-mcp-bot/
 │   ├── logger.ts          # Persistent logging with rotation
 │   ├── types.ts           # TypeScript types
 │   └── index.ts           # Standalone entry point (legacy)
+├── cloud-connector/       # Cloudflare Worker MCP adapter (Mode 4)
+│   ├── src/
+│   │   ├── index.ts       # Worker entry + MCP transport
+│   │   ├── tools.ts       # All 26 Discord tools
+│   │   ├── discord-client.ts  # HTTP client for Fly.io API
+│   │   └── types.ts       # Environment bindings
+│   ├── package.json
+│   ├── wrangler.jsonc     # Cloudflare config
+│   └── README.md          # Cloud connector setup guide
 ├── dist/                  # Compiled JavaScript
 ├── Dockerfile             # Container build for cloud deployment
 ├── fly.toml.example       # Fly.io config template
