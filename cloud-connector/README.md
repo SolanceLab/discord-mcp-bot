@@ -110,6 +110,10 @@ All 26 Discord tools are available:
 
 **Note:** `check_mentions` and `check_dms` return helpful messages explaining that the cloud bot handles these automatically.
 
+### Known Limitations
+
+- **`send_file` cannot read local files.** The Worker runs on Cloudflare's edge network, not your machine — it has no access to your local filesystem. The `file_path` parameter refers to files on the Fly.io bot server. If you need to send local files to Discord, consider running a local MCP server alongside this cloud connector for file operations only.
+
 ## Environment Variables
 
 | Variable | Description |
