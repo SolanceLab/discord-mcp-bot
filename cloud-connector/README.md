@@ -98,7 +98,7 @@ All 26 Discord tools are available:
 |----------|-------|
 | Messages | `read_messages`, `send_message`, `edit_message`, `delete_message`, `pin_message` |
 | DMs | `send_dm`, `check_dms` (info only) |
-| Attachments | `send_file`, `fetch_attachment` |
+| Attachments | `send_file`\*, `fetch_attachment`\* |
 | Reactions | `add_reaction`, `get_reactions` |
 | Polls | `create_poll` |
 | Threads | `create_thread` |
@@ -112,7 +112,7 @@ All 26 Discord tools are available:
 
 ### Known Limitations
 
-- **`send_file` cannot read local files.** The Worker runs on Cloudflare's edge network, not your machine — it has no access to your local filesystem. The `file_path` parameter refers to files on the Fly.io bot server. If you need to send local files to Discord, consider running a local MCP server alongside this cloud connector for file operations only.
+- **\*Attachment tools have limited functionality.** The Worker runs on Cloudflare's edge network, not your machine. `send_file` cannot read from your local filesystem — the `file_path` parameter refers to files on the Fly.io bot server only. `fetch_attachment` returns CDN URLs but saving files locally may not work depending on your client. If you need full file operations, consider running a local MCP server alongside this cloud connector for attachment handling.
 
 ## Environment Variables
 
