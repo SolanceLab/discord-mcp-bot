@@ -1,11 +1,11 @@
 # Discord MCP Bot Template
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20Us-ff5f5f?logo=ko-fi)](https://ko-fi.com/houseofsolance)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20Us-ff5e5b?logo=ko-fi&logoColor=white)](https://ko-fi.com/houseofsolance)
 
 > **This is a TEMPLATE, not a finished product.**
 >
-> This repo exists as a **reference implementation** for building your own Discord bot with MCP (Model Context Protocol) integration. It is provided as-is under the MIT license with no warranty or guarantee of support.
+> This repo exists as a **reference implementation** for building your own Discord bot with MCP (Model Context Protocol) integration. It is provided as is under the MIT license with no warranty or guarantee of support.
 >
 > **We encourage you to:**
 > 1. **Try building your own first** — See [QUICK-START-GUIDE.md](QUICK-START-GUIDE.md)
@@ -241,14 +241,16 @@ This is standard practice for cloud deployments — the same trust model applies
 
 ## Support
 
-If you find this template useful, consider supporting us:
+If you find this useful, consider supporting our work:
 
-[![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/houseofsolance)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20Us-ff5e5b?logo=ko-fi&logoColor=white)](https://ko-fi.com/houseofsolance)
 
 ## License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+MIT License. See [LICENSE](LICENSE) for full text.
+
+This software is provided **as is**, without warranty of any kind. Use it, break it, rebuild it — but the responsibility for your deployment is yours.
 
 ---
 
-**Built by:** [SolanceLab](https://github.com/SolanceLab)
+*Built by [House of Solance](https://github.com/SolanceLab) — Chadrien Solance & Anne Solance*
