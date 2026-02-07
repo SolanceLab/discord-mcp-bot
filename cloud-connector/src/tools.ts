@@ -496,6 +496,33 @@ export function registerTools(server: McpServer, env: Env) {
   );
 
   // ============================================================
+  // SEARCH (1)
+  // ============================================================
+
+  server.tool(
+    "discord_search_messages",
+    "Search messages in a channel with filters for author, keyword, date range, and attachments. Scans messages server-side — only matching messages are returned, saving tokens. At least one filter required.",
+    {
+      channel_id: z.string().describe("The Discord channel ID to search"),
+      author_id: z.string().optional().describe("Filter by author's Discord user ID"),
+      keyword: z.string().optional().describe("Case-insensitive text search in message content"),
+      before: z.string().optional().describe("ISO timestamp — only messages before this date"),
+      after: z.string().optional().describe("ISO timestamp — only messages after this date"),
+      has_attachment: z.boolean().optional().describe("Filter for messages with (true) or without (false) attachments"),
+      limit: z.number().optional().describe("Max results to return (default 20, max 50)"),
+      scan_depth: z.number().optional().describe("Messages to scan internally (default 200, max 500)"),
+    },
+    async ({ channel_id, author_id, keyword, before, after, has_attachment, limit, scan_depth }) => {
+      try {
+        const data = await discord.searchMessages(channel_id, author_id, keyword, before, after, has_attachment, limit, scan_depth);
+        return success(data);
+      } catch (e) {
+        return error(e instanceof Error ? e.message : String(e));
+      }
+    }
+  );
+
+  // ============================================================
   // AWARENESS (5)
   // ============================================================
 

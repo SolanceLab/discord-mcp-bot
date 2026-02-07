@@ -152,4 +152,26 @@ export class DiscordClient {
   async listRoles(serverId: string) {
     return this.call("list-roles", { server_id: serverId });
   }
+
+  async searchMessages(
+    channelId: string,
+    authorId?: string,
+    keyword?: string,
+    before?: string,
+    after?: string,
+    hasAttachment?: boolean,
+    limit?: number,
+    scanDepth?: number
+  ) {
+    return this.call("search-messages", {
+      channel_id: channelId,
+      author_id: authorId,
+      keyword,
+      before,
+      after,
+      has_attachment: hasAttachment,
+      limit,
+      scan_depth: scanDepth,
+    });
+  }
 }
