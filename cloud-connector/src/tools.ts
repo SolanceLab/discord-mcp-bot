@@ -1,5 +1,5 @@
 /**
- * All 26 Discord MCP tools
+ * All 27 Discord MCP tools
  *
  * Each tool follows the same pattern:
  * 1. Validate input via Zod

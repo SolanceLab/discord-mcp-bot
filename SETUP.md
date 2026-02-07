@@ -1,9 +1,10 @@
 # Discord MCP Bot Setup Guide
 
-A Discord bot with **three deployment modes**:
+A Discord bot with **four deployment modes**:
 1. **Local Direct** — MCP server runs locally, Claude Desktop/Code controls the bot directly
 2. **Cloud** — Bot runs 24/7 on Fly.io with HTTP API and auto-responses
 3. **Proxy** — Local MCP server forwards tool calls to cloud instance
+4. **Cloud Connector** — Cloudflare Worker gives Discord access from Claude.ai web/mobile
 
 ---
 
@@ -14,7 +15,7 @@ A Discord bot with **three deployment modes**:
 │  MODE 1: Local Direct                                          │
 │  Claude Desktop/Code ←→ MCP Server ←→ Discord                  │
 │  • You control the bot through Claude                          │
-│  • 26 tools: read, send, manage channels, moderate, etc.       │
+│  • 27 tools: read, send, search, manage channels, moderate     │
 │  • Bot auto-responds to @mentions via Claude API               │
 │  • Requires your machine to be running                         │
 ├────────────────────────────────────────────────────────────────┤
@@ -29,6 +30,12 @@ A Discord bot with **three deployment modes**:
 │  • Best of both: Claude tools + 24/7 cloud uptime              │
 │  • Local MCP server forwards tool calls to cloud via HTTP      │
 │  • No duplicate Discord connections                            │
+├────────────────────────────────────────────────────────────────┤
+│  MODE 4: Cloud Connector (Cloudflare Worker)                   │
+│  Claude.ai ←──MCP──→ Cloudflare Worker ──HTTP──→ Cloud Server  │
+│  • Access Discord from Claude.ai web or mobile app             │
+│  • No laptop required — works from phone/tablet                │
+│  • See /cloud-connector for setup                              │
 └────────────────────────────────────────────────────────────────┘
 ```
 
@@ -314,7 +321,7 @@ The `BOT_API_SECRET` must match what you set as a Fly.io secret.
 ### How It Works
 
 When `BOT_API_URL` is set, the MCP server automatically switches to proxy mode:
-- All 26 tools are still available to Claude
+- All 27 tools are still available to Claude
 - Tool calls are forwarded to the cloud instance via HTTP
 - Attachment downloads go through the cloud (CDN URLs fetched remotely, saved locally)
 - No local Discord connection — the cloud instance handles that
@@ -326,6 +333,7 @@ When `BOT_API_URL` is set, the MCP server automatically switches to proxy mode:
 | Testing and development | Local Direct |
 | 24/7 bot with auto-responses only | Cloud |
 | 24/7 bot + Claude Desktop/Code tools | Proxy + Cloud |
+| Discord access from phone/browser | Cloud Connector + Cloud |
 
 ---
 
