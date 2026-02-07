@@ -92,7 +92,7 @@ The connector supports two auth methods:
 
 ## Available Tools
 
-All 26 Discord tools are available:
+All 27 Discord tools are available:
 
 | Category | Tools |
 |----------|-------|
@@ -106,6 +106,7 @@ All 26 Discord tools are available:
 | Channels | `list_channels`, `create_channel`, `rename_channel`, `set_channel_topic`, `delete_channel`, `move_channel` |
 | Categories | `create_category` |
 | Moderation | `timeout_user`, `assign_role`, `remove_role` |
+| Search | `search_messages` — server-side filter by author, keyword, date range, attachments |
 | Awareness | `check_mentions` (info only), `get_history`, `list_members`, `get_user_info`, `list_roles` |
 
 **Note:** `check_mentions` and `check_dms` return helpful messages explaining that the cloud bot handles these automatically.
