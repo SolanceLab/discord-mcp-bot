@@ -45,8 +45,8 @@ export class DiscordClient {
     return this.call("read-messages", { channel_id: channelId, limit });
   }
 
-  async sendMessage(channelId: string, content: string) {
-    return this.call("send-message", { channel_id: channelId, content });
+  async sendMessage(channelId: string, content: string, replyToMessageId?: string) {
+    return this.call("send-message", { channel_id: channelId, content, reply_to_message_id: replyToMessageId });
   }
 
   async sendDm(userId: string, content: string) {

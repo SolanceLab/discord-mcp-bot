@@ -46,14 +46,15 @@ export function registerTools(server: McpServer, env: Env) {
 
   server.tool(
     "discord_send_message",
-    "Send a message to a Discord channel.",
+    "Send a message to a Discord channel. Optionally reply to a specific message.",
     {
       channel_id: z.string().describe("The Discord channel ID to send to"),
       content: z.string().describe("The message content to send (max 2000 characters)"),
+      reply_to_message_id: z.string().optional().describe("Optional message ID to reply to. Creates a threaded reply linking to the original message."),
     },
-    async ({ channel_id, content }) => {
+    async ({ channel_id, content, reply_to_message_id }) => {
       try {
-        const data = await discord.sendMessage(channel_id, content);
+        const data = await discord.sendMessage(channel_id, content, reply_to_message_id);
         return success(data);
       } catch (e) {
         return error(e instanceof Error ? e.message : String(e));
