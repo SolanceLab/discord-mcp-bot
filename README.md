@@ -81,7 +81,7 @@ This bot supports **four deployment modes**:
 
 ## Features
 
-- **27 MCP Tools**: Full Discord control — messages, channels, threads, forums, polls, reactions, moderation, attachments, server-side search
+- **28 MCP Tools**: Full Discord control — messages, channels, threads, forums, polls, reactions, moderation, attachments, server-side search, DM channel lookup
 - **Autonomous API Responses**: Bot responds to owner @mentions even without Claude Desktop open
 - **Three Deployment Modes**: Local direct, cloud (Fly.io), or proxy — pick what fits
 - **HTTP API**: Express server with bearer token auth and rate limiting (60 req/min)
@@ -198,7 +198,7 @@ discord-mcp-bot/
 │   ├── mcp-server.ts      # MCP server — local direct or proxy mode
 │   ├── cloud-server.ts    # Cloud entry point (Fly.io)
 │   ├── http-server.ts     # Express HTTP API with auth + rate limiting
-│   ├── discord-client.ts  # Discord.js client wrapper (27 methods)
+│   ├── discord-client.ts  # Discord.js client wrapper (28 methods)
 │   ├── claude.ts          # Anthropic API client
 │   ├── memory.ts          # Memory ledger + optional external API sync
 │   ├── logger.ts          # Persistent logging with rotation
@@ -207,7 +207,7 @@ discord-mcp-bot/
 ├── cloud-connector/       # Cloudflare Worker MCP adapter (Mode 4)
 │   ├── src/
 │   │   ├── index.ts       # Worker entry + MCP transport
-│   │   ├── tools.ts       # All 27 Discord tools
+│   │   ├── tools.ts       # All 28 Discord tools
 │   │   ├── discord-client.ts  # HTTP client for Fly.io API
 │   │   └── types.ts       # Environment bindings
 │   ├── package.json

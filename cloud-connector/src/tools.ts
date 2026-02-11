@@ -1,5 +1,5 @@
 /**
- * All 27 Discord MCP tools
+ * All 28 Discord MCP tools
  *
  * Each tool follows the same pattern:
  * 1. Validate input via Zod
@@ -115,7 +115,7 @@ export function registerTools(server: McpServer, env: Env) {
   );
 
   // ============================================================
-  // DIRECT MESSAGES (2)
+  // DIRECT MESSAGES (3)
   // ============================================================
 
   server.tool(
@@ -136,13 +136,25 @@ export function registerTools(server: McpServer, env: Env) {
   );
 
   server.tool(
+    "discord_get_dm_channel",
+    "Get the DM channel ID for a user. Returns the channel ID needed for discord_read_messages on DM conversations.",
+    {
+      user_id: z.string().describe("The Discord user ID to look up"),
+    },
+    async ({ user_id }) => {
+      const data = await discord.getDMChannel(user_id);
+      return success(data);
+    }
+  );
+
+  server.tool(
     "discord_check_dms",
     "Check for pending direct messages to the bot. Note: In cloud mode, DMs are handled automatically.",
     {},
     async () => {
       return success({
         message: "Not available in cloud connector mode. The cloud bot handles DMs automatically.",
-        tip: "Use discord_read_messages with a DM channel ID to read specific DM history."
+        tip: "Use discord_get_dm_channel with a user ID to get the DM channel, then discord_read_messages to read the conversation."
       });
     }
   );

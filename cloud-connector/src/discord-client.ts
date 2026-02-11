@@ -53,6 +53,10 @@ export class DiscordClient {
     return this.call("send-dm", { user_id: userId, content });
   }
 
+  async getDMChannel(userId: string) {
+    return this.call("get-dm-channel", { user_id: userId });
+  }
+
   async sendFile(channelId: string, filePath: string, content?: string) {
     return this.call("send-file", { channel_id: channelId, file_path: filePath, content });
   }

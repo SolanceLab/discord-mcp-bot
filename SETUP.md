@@ -15,7 +15,7 @@ A Discord bot with **four deployment modes**:
 │  MODE 1: Local Direct                                          │
 │  Claude Desktop/Code ←→ MCP Server ←→ Discord                  │
 │  • You control the bot through Claude                          │
-│  • 27 tools: read, send, search, manage channels, moderate     │
+│  • 28 tools: read, send, search, manage channels, moderate     │
 │  • Bot auto-responds to @mentions via Claude API               │
 │  • Requires your machine to be running                         │
 ├────────────────────────────────────────────────────────────────┤
@@ -168,7 +168,7 @@ In Claude Desktop, try:
 
 ---
 
-## MCP Tools Available (26 Total)
+## MCP Tools Available (28 Total)
 
 ### Core
 | Tool | Description |
@@ -176,6 +176,7 @@ In Claude Desktop, try:
 | `discord_read_messages` | Read recent messages (includes attachments) |
 | `discord_send_message` | Send a message to a channel |
 | `discord_send_dm` | Send a DM to a user |
+| `discord_get_dm_channel` | Get DM channel ID for a user |
 | `discord_send_file` | Send a file/attachment to a channel |
 | `discord_check_mentions` | Check pending @mentions |
 | `discord_check_dms` | Check pending DMs |
@@ -321,7 +322,7 @@ The `BOT_API_SECRET` must match what you set as a Fly.io secret.
 ### How It Works
 
 When `BOT_API_URL` is set, the MCP server automatically switches to proxy mode:
-- All 27 tools are still available to Claude
+- All 28 tools are still available to Claude
 - Tool calls are forwarded to the cloud instance via HTTP
 - Attachment downloads go through the cloud (CDN URLs fetched remotely, saved locally)
 - No local Discord connection — the cloud instance handles that
@@ -345,7 +346,7 @@ discord-mcp-bot/
 │   ├── mcp-server.ts      # MCP server — local direct or proxy mode
 │   ├── cloud-server.ts    # Cloud entry point (Fly.io)
 │   ├── http-server.ts     # Express HTTP API with auth + rate limiting
-│   ├── discord-client.ts  # Discord.js client wrapper (26 methods)
+│   ├── discord-client.ts  # Discord.js client wrapper (28 methods)
 │   ├── claude.ts          # Anthropic API client
 │   ├── memory.ts          # Memory ledger + optional external API sync
 │   ├── logger.ts          # Persistent logging with rotation

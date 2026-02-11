@@ -92,12 +92,12 @@ The connector supports two auth methods:
 
 ## Available Tools
 
-All 27 Discord tools are available:
+All 28 Discord tools are available:
 
 | Category | Tools |
 |----------|-------|
 | Messages | `read_messages`, `send_message`, `edit_message`, `delete_message`, `pin_message` |
-| DMs | `send_dm`, `check_dms` (info only) |
+| DMs | `send_dm`, `get_dm_channel`, `check_dms` (info only) |
 | Attachments | `send_file`\*, `fetch_attachment`\* |
 | Reactions | `add_reaction`, `get_reactions` |
 | Polls | `create_poll` |
