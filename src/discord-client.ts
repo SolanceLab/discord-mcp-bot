@@ -137,12 +137,23 @@ export class DiscordClient extends EventEmitter {
         toDelete.forEach(id => this.processedMessages.delete(id));
       }
 
+      // Resolve display name (guild nick > global name > username)
+      let authorDisplayName = message.author.tag;
+      if (!isDM && message.guild) {
+        try {
+          const member = await message.guild.members.fetch(message.author.id);
+          authorDisplayName = member.displayName;
+        } catch {
+          // Fallback to tag
+        }
+      }
+
       const mentionEvent: MentionEvent = {
         channelId: message.channelId,
         channelName: isDM ? 'DM' : (message.channel as TextChannel).name,
         guildName: message.guild?.name || null,
         authorId: message.author.id,
-        authorTag: message.author.tag,
+        authorTag: authorDisplayName,
         content: message.content,
         timestamp: message.createdAt,
         message: message,
@@ -341,6 +352,28 @@ export class DiscordClient extends EventEmitter {
       console.error(`Failed to fetch messages from ${channelId}:`, error);
       return [];
     }
+  }
+
+  async resolveDisplayNames(
+    guildId: string,
+    authorIds: string[]
+  ): Promise<Map<string, string>> {
+    const nameMap = new Map<string, string>();
+    try {
+      const guild = await this.client.guilds.fetch(guildId);
+      const uniqueIds = [...new Set(authorIds)];
+      for (const id of uniqueIds) {
+        try {
+          const member = await guild.members.fetch(id);
+          nameMap.set(id, member.displayName);
+        } catch {
+          // Member left server or bot can't see them — skip
+        }
+      }
+    } catch {
+      // Guild fetch failed — all will fall back
+    }
+    return nameMap;
   }
 
   async sendTyping(channelId: string): Promise<void> {

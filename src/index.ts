@@ -173,7 +173,7 @@ class DiscordMcpBot {
         role: 'user',
         content: message.content,
         timestamp: new Date().toISOString(),
-        author: message.author.tag,
+        author: message.member?.displayName || message.author.tag,
         userId: message.author.id
       });
 

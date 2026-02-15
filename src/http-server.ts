@@ -156,9 +156,17 @@ export function createHttpServer(
 
       const messages = await discordClient.getRecentMessages(channel_id, Math.min(limit, 50));
 
+      // Resolve display names for guild channels
+      const nameMap = new Map<string, string>();
+      if (messages.length > 0 && messages[0].guild) {
+        const authorIds = messages.map(m => m.author.id);
+        const resolved = await discordClient.resolveDisplayNames(messages[0].guild.id, authorIds);
+        resolved.forEach((v, k) => nameMap.set(k, v));
+      }
+
       const formatted = messages.map(msg => ({
         id: msg.id,
-        author: msg.author.tag,
+        author: nameMap.get(msg.author.id) || msg.author.tag,
         authorId: msg.author.id,
         content: msg.content,
         timestamp: msg.createdAt.toISOString(),

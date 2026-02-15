@@ -1308,9 +1308,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
+      // Resolve display names for guild channels
+      const nameMap = new Map<string, string>();
+      const firstMsg = messages[0];
+      if (firstMsg.guild) {
+        const authorIds = messages.map(m => m.author.id);
+        const resolved = await discordClient.resolveDisplayNames(firstMsg.guild.id, authorIds);
+        resolved.forEach((v, k) => nameMap.set(k, v));
+      }
+
       const formatted = messages.map(msg => {
         const timestamp = msg.createdAt.toISOString();
-        const author = msg.author.tag;
+        const author = nameMap.get(msg.author.id) || msg.author.tag;
         const messageId = msg.id;
 
         let text = `[${timestamp}] (${messageId}) ${author}: ${msg.content}`;
