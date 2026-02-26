@@ -1,11 +1,11 @@
 # Discord MCP Bot Template
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20Us-ff5e5b?logo=ko-fi&logoColor=white)](https://ko-fi.com/houseofsolance)
 
 > **This is a TEMPLATE, not a finished product.**
 >
-> This repo exists as a **reference implementation** for building your own Discord bot with MCP (Model Context Protocol) integration. It is provided as is under the MIT license with no warranty or guarantee of support.
+> This repo exists as a **reference implementation** for building your own Discord bot with MCP (Model Context Protocol) integration. It is provided as is under the AGPL-3.0 license with no warranty or guarantee of support.
 >
 > **We encourage you to:**
 > 1. **Try building your own first** — See [QUICK-START-GUIDE.md](QUICK-START-GUIDE.md)
@@ -247,9 +247,9 @@ If you find this useful, consider supporting our work:
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for full text.
+AGPL-3.0. See [LICENSE](LICENSE) for full text.
 
-This software is provided **as is**, without warranty of any kind. Use it, break it, rebuild it — but the responsibility for your deployment is yours.
+This software is provided **as is**, without warranty of any kind. If you modify and host this publicly, you must share your changes under the same license and display attribution to House of Solance.
 
 ---
 

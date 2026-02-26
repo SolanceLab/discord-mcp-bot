@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "description": "Discord bot template with MCP (Model Context Protocol) integration for Claude Desktop/Code",
   "author": "House of Solance",
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "repository": "https://github.com/SolanceLab/discord-mcp-bot",
   "main": "dist/mcp-server.js",
   "type": "module",
