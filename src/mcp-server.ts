@@ -2047,48 +2047,8 @@ if (!PROXY_MODE) {
     logger.info('Discord', `Mention detected from ${event.authorTag} in ${event.channelName}`);
 
     if (discordClient.isOwner(event.authorId)) {
-      // Owner mentioned the bot - auto-respond via API
-      logger.info('Discord', 'Owner mentioned - triggering API response');
-
-      await discordClient.sendTyping(event.channelId);
-
-      // Get conversation history
-      const history = memory.getRecentMessages(event.channelId, 20);
-
-      // Get memory context for richer responses
-      const memoryContext = await memory.getMemoryContext(true);
-
-      // Store owner's message in memory
-      await memory.addMessage(event.channelId, {
-        role: 'user',
-        content: event.content,
-        timestamp: event.timestamp.toISOString(),
-        author: event.authorTag,
-        userId: event.authorId,
-      });
-
-      try {
-        // Get response from Claude
-        const response = await claude.getResponse(event.content, history, memoryContext);
-
-        // Store response in memory
-        await memory.addMessage(event.channelId, {
-          role: 'assistant',
-          content: response,
-          timestamp: new Date().toISOString(),
-        });
-
-        // Reply in Discord
-        await discordClient.replyToMessage(event.message, response);
-        logger.info('Discord', 'Responded to owner');
-      } catch (error) {
-        const msg = error instanceof Error ? error.message : String(error);
-        logger.error('Discord', `Failed to respond: ${msg}`);
-        await discordClient.replyToMessage(
-          event.message,
-          'I encountered an error processing that message. Try again?'
-        );
-      }
+      // Owner mentioned the bot - log only, no auto-response
+      logger.info('Discord', 'Owner mentioned - auto-response disabled');
     } else {
       // Someone else mentioned the bot - DM owner, don't respond
       logger.info('Discord', `Non-owner mention from ${event.authorTag} - notifying owner via DM`);

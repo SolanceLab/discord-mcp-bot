@@ -58,41 +58,8 @@ discordClient.on('mention', async (event: MentionEvent) => {
   logger.info('Cloud', `📨 Mention from ${event.authorTag} in ${event.channelName}`);
 
   if (discordClient.isOwner(event.authorId)) {
-    // Owner mentioned the bot — auto-respond via Claude API
-    logger.info('Cloud', '👑 Owner mentioned — triggering API response');
-
-    await discordClient.sendTyping(event.channelId);
-
-    const history = memory.getRecentMessages(event.channelId, 20);
-    const memoryContext = await memory.getMemoryContext(true);
-
-    await memory.addMessage(event.channelId, {
-      role: 'user',
-      content: event.content,
-      timestamp: event.timestamp.toISOString(),
-      author: event.authorTag,
-      userId: event.authorId,
-    });
-
-    try {
-      const response = await claude.getResponse(event.content, history, memoryContext);
-
-      await memory.addMessage(event.channelId, {
-        role: 'assistant',
-        content: response,
-        timestamp: new Date().toISOString(),
-      });
-
-      await discordClient.replyToMessage(event.message, response);
-      logger.info('Cloud', '✅ Responded to owner');
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      logger.error('Cloud', `Failed to respond: ${msg}`);
-      await discordClient.replyToMessage(
-        event.message,
-        'I encountered an error processing that message. Try again?'
-      );
-    }
+    // Owner mentioned the bot — log only, no auto-response
+    logger.info('Cloud', 'Owner mentioned — auto-response disabled');
   } else {
     // Someone else mentioned the bot — DM owner
     logger.info('Cloud', `📩 Non-owner mention from ${event.authorTag} — notifying owner`);
